@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 import requests,json,datetime,urllib3,time
+from threading import Thread
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 dt = datetime.datetime
-application = Flask(__name__)
+app = Flask(__name__)
 weekday = {
     "1":"일요일",
     "2":"월요일",
@@ -114,7 +115,7 @@ def get_diet():
             fn = "fdd"
         now = datetime.datetime.now()
         nowt = now.strftime('%Y-%m-%d %H:%M:%S')
-        f = open(fn+".txt","w",encoding="utf-8")
+        f = open("./"+fn+".txt","w",encoding="utf-8")
         f.write(diet)
         f.close()
         print(f"{nowt} {fn}.txt 파일 저장\n{diet}")
@@ -199,13 +200,25 @@ def get_time():
         fd = diet[:-1]
         now = datetime.datetime.now()
         nowt = now.strftime('%Y-%m-%d %H:%M:%S')
-        f = open(fn+".txt","w",encoding="utf-8")
+        f = open("./"+fn+".txt","w",encoding="utf-8")
         f.write(fd)
         f.close()
         print(f"{nowt} {fn}.txt 파일 저장\n{fd}")
     return True
 
+@app.route("/")
+def index():
+    return render_template("./index.html")
+
+def run():
+    app.run(host="0.0.0.0", port=80)
+
+def fserver():
+    server = Thread(target=run)
+    server.start()
+
+fserver()
 while True:
     get_diet()
     get_time()
-    time.sleep(300)
+    time.sleep(1800)
